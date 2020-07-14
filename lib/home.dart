@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onlinebooksadmin/request.dart';
+import 'package:onlinebooksadmin/write.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -61,9 +62,11 @@ class BottomNavContents extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: navBarContents(index, context),
+    return Scaffold(
+      body: Container(
+        child: Center(
+          child: navBarContents(index, context),
+        ),
       ),
     );
   }
@@ -73,7 +76,7 @@ class BottomNavContents extends StatelessWidget {
       case 0:
         return RequestScreen();
       case 1:
-        return Text('coming soon');
+        return WriteScreen();
     }
   }
 }

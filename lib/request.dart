@@ -16,7 +16,6 @@ class _RequestScreenState extends State<RequestScreen> {
     databaseReference.collection(col).add(
         {
           "author" : author,
-          "description" : 50,
           "likes": 0,
           "share": 0,
           "story": story,
@@ -38,8 +37,7 @@ class _RequestScreenState extends State<RequestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: StreamBuilder(
+    return StreamBuilder(
         stream: Firestore.instance.collection('request').snapshots(),
         builder: (BuildContext content, AsyncSnapshot<QuerySnapshot> snapshot){
           if(!snapshot.hasData) return new CircularProgressIndicator();
@@ -53,13 +51,13 @@ class _RequestScreenState extends State<RequestScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     ListTile(
-                        leading: const Icon(Icons.album),
+                        leading: ds['imageUrl'] != null ? Image.network(ds['imageUrl']) : Icon(Icons.album),
                         title: new Text(ds['title']),
                         onTap: (){ Navigator.push(context, MaterialPageRoute(builder: (context)=>Story(story: ds)));},
                         subtitle: Column(
                           children: <Widget>[
                             SizedBox(height: 10.0),
-                            Text("Author: "+ds['author']),
+                            ds['author']  != null ? Text("Author: "+ds['author']) : SizedBox(height: 3.0),
                             Row(
                               children: <Widget>[
                                 Expanded(
@@ -88,8 +86,7 @@ class _RequestScreenState extends State<RequestScreen> {
             },
           );
         },
-      ),
-    );
+      );
   }
 
 
