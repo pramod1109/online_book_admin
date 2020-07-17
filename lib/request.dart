@@ -16,7 +16,7 @@ class _RequestScreenState extends State<RequestScreen> {
     databaseReference.collection(col).add(
         {
           "author" : author,
-          "likes": 0,
+          "likes": [],
           "share": 0,
           "story": story,
           "reads": 0,

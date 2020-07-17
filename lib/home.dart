@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _myBottomNavBar() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
-      selectedItemColor: Colors.redAccent,
+      selectedItemColor: Color(0xff61A4F1),
       unselectedItemColor: Colors.black.withOpacity(0.5),
       showUnselectedLabels: true,
       elevation: 100.0,
@@ -45,8 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: new AppBar(
-        title: const Text('E-book Admin'),
-        backgroundColor: Colors.redAccent,
+        title: Image.asset('assets/images/Logo_Bhavatarangini.png',fit: BoxFit.contain, height: 64,
+        ),
+        backgroundColor: Color(0xff61A4F1),
       ),
       body: BottomNavContents(
         index: _currentIndex,

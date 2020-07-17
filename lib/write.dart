@@ -335,7 +335,7 @@ class EditorPageState extends State<EditorPage> {
           "author" : 'admin',
           "story": html,
           "title": widget.title,
-          "likes": 0,
+          "likes": [],
           "share": 0,
           "reads": 0,
         }).then((value){
