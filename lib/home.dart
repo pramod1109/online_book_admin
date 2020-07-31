@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:onlinebooksadmin/notif.dart';
 import 'package:onlinebooksadmin/request.dart';
+import 'package:onlinebooksadmin/storage.dart';
 import 'package:onlinebooksadmin/write.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,9 +16,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   int _currentIndex = 0;
+
+  bool gettingDetails = true;
   _onTapItem(int index) {
     setState(() {
       _currentIndex = index;
+    });
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    getDetails();
+  }
+
+  getDetails() async {
+    await Firestore.instance.collection('user').getDocuments().then((value) {
+      Storage.usersList = value.documents;
+      Storage.usersList.forEach((element) {
+        Storage.usersMap['${element.documentID}'] = element;
+      });
+    });
+    await Firestore.instance.collection('categories').getDocuments().then((value) {
+      value.documents.forEach((element) {
+        Storage.catsMap['${element.documentID}'] = element;
+      });
+    });
+    await NotificationHandler.instance.init(context);
+    gettingDetails = false;
+    setState(() {
     });
   }
 
@@ -49,8 +79,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         backgroundColor: Color(0xff61A4F1),
       ),
-      body: BottomNavContents(
-        index: _currentIndex,
+      body: Stack(
+        children: <Widget>[
+          AbsorbPointer(
+              absorbing: false,
+              child: BottomNavContents(
+                index: _currentIndex,
+              )
+          ),
+          if(gettingDetails)
+          LinearProgressIndicator()
+        ],
       ),
       bottomNavigationBar: _myBottomNavBar(),
     );

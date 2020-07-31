@@ -1,7 +1,12 @@
+// ignore: avoid_web_libraries_in_flutter
+//import 'dart:html';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:onlinebooksadmin/notif.dart';
+import 'package:onlinebooksadmin/storage.dart';
 
 class RequestScreen extends StatefulWidget {
   @override
@@ -12,17 +17,18 @@ class _RequestScreenState extends State<RequestScreen> {
 
   final databaseReference = Firestore.instance;
 
-  void _onPressed(String col, String author, String des, String story, String title, String id) {
-    databaseReference.collection(col).add(
+  void _onPressed(String col, String author, String des, String story, String title, String id) async {
+    await databaseReference.collection('categories').document(col).collection('books').document(id).setData(
         {
           "author" : author,
           "likes": [],
           "share": 0,
           "story": story,
           "reads": 0,
-          "title": title
-        }).then((value){
-      print(value.documentID);
+          "title": title,'book_id':id
+        });
+    Storage.catsMap[col]['subscription'].forEach((u) async {
+      await NotificationHandler.instance.sendMessage('New Book in $col', 'There is a new book added in your favourite catogory $col', Storage.usersMap[u]['notif_token']);
     });
     _delete(id);
   }
