@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:onlinebooksadmin/notif.dart';
+import 'package:onlinebooksadmin/storage.dart';
 
 class SendScreen extends StatefulWidget {
   @override
@@ -7,6 +9,8 @@ class SendScreen extends StatefulWidget {
 }
 
 class _SendScreenState extends State<SendScreen> {
+
+  bool sending=false;
 
   Future<void> _showMyDialog(String mis) async {
     return showDialog<void>(
@@ -45,7 +49,7 @@ class _SendScreenState extends State<SendScreen> {
             left: 25.0, right: 25.0, top: 2.0),
         child:TextFormField(
           controller: _titleController,
-          maxLength: 15,
+          maxLines: 1,
           decoration: InputDecoration(labelText: 'Title'),
           validator: (String value) {
             if (value.isEmpty) {
@@ -62,7 +66,6 @@ class _SendScreenState extends State<SendScreen> {
             left: 25.0, right: 25.0, top: 2.0),
         child:TextFormField(
           controller: _msgController,
-          maxLength: 25,
           decoration: InputDecoration(labelText: 'Message'),
           validator: (String value) {
             if (value.isEmpty) {
@@ -79,7 +82,16 @@ class _SendScreenState extends State<SendScreen> {
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: (){},
+        onPressed: () async {
+          setState(() {
+            sending=true;
+          });
+          await NotificationHandler.instance.init(context);
+          Storage.usersList.forEach((u) async {
+            await NotificationHandler.instance.sendMessage(_titleController.text, _msgController.text, u['notif_token']);
+          });
+          Navigator.pop(context);
+        },
         color:  Color(0xff61A4F1).withOpacity(0.8),
         padding: EdgeInsets.all(15.0),
         shape: RoundedRectangleBorder(
@@ -108,11 +120,6 @@ class _SendScreenState extends State<SendScreen> {
           child: Stack(
             children: <Widget>[
               Container(
-                height: double.infinity,
-                width: double.infinity,
-              ),
-              Container(
-                height: double.infinity,
                 child: SingleChildScrollView(
                   physics: AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.symmetric(
@@ -139,6 +146,10 @@ class _SendScreenState extends State<SendScreen> {
                     ],
                   ),
                 ),
+              ),
+              if(sending)
+              Center(
+                child: CircularProgressIndicator(),
               )
             ],
           ),
