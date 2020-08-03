@@ -4,6 +4,7 @@ import 'package:onlinebooksadmin/notif.dart';
 import 'package:onlinebooksadmin/request.dart';
 import 'package:onlinebooksadmin/storage.dart';
 import 'package:onlinebooksadmin/write.dart';
+import 'package:onlinebooksadmin/Send.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -66,6 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icon(Icons.mode_edit),
           title: Text(_contents[1]),
         ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.send),
+          title: Text("Massage"),
+        ),
       ],
     );
   }
@@ -73,25 +78,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: Image.asset('assets/images/Logo_Bhavatarangini.png',fit: BoxFit.contain, height: 64,
-        ),
-        backgroundColor: Color(0xff61A4F1),
-      ),
-      body: Stack(
-        children: <Widget>[
-          AbsorbPointer(
-              absorbing: false,
-              child: BottomNavContents(
-                index: _currentIndex,
-              )
+    return MaterialApp(
+      title: 'భావతరంగిణి Admin',
+        debugShowCheckedModeBanner: false,
+       home: Scaffold(
+          appBar: new AppBar(
+            title: Image.asset('assets/images/Logo_Bhavatarangini.png',fit: BoxFit.contain, height: 64,
+            ),
+            backgroundColor: Color(0xff61A4F1),
           ),
-          if(gettingDetails)
-          LinearProgressIndicator()
-        ],
-      ),
-      bottomNavigationBar: _myBottomNavBar(),
+          body: Stack(
+            children: <Widget>[
+              AbsorbPointer(
+                  absorbing: false,
+                  child: BottomNavContents(
+                    index: _currentIndex,
+                  )
+              ),
+              if(gettingDetails)
+              LinearProgressIndicator()
+            ],
+          ),
+          bottomNavigationBar: _myBottomNavBar(),
+        )
     );
   }
 }
@@ -117,6 +126,8 @@ class BottomNavContents extends StatelessWidget {
         return RequestScreen();
       case 1:
         return WriteScreen();
+      case 2:
+        return SendScreen();
     }
   }
 }

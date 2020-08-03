@@ -23,8 +23,16 @@ class _WriteScreenState extends State<WriteScreen> {
   List<String> _category = ['కథలు','కవితలు','సంపాదకీయం','భావ స్పందన','గ్రంథ సమీక్ష','బాలతరంగిణి','హాస్యం','నవలలు','బాల సాహిత్యం','బాల వ్యాఖ్య','నానీలు','చిత్ర వ్యాఖ్య', 'చిత్ర కథ', 'భావగీతం', 'చిత్ర కవిత', 'కార్టూన్ వ్యాఖ్య','సరదా సమాధానాలు'];
   String _selectedCategory;
   String imageUrl;
-
+  String name;
   File _image;
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+
 
   Future<String> pickImage() async {
     //Get the file from the image picker and store it
@@ -40,110 +48,152 @@ class _WriteScreenState extends State<WriteScreen> {
       final StorageUploadTask task = storageRef.putFile(_image);
       return await (await task.onComplete).ref.getDownloadURL();
     } catch (error) {
-      print(error.toString());
-      throw error.toString();
+      //print(error.toString());
     }
+  }
+
+  Future<void> _showMyDialog(String mis) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Conformation'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('$mis field is left empty'),
+                Text('Please do update it'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _noImageDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Conformation'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Image field is left empty'),
+                Text('Do you want update it or continue'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Update'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            FlatButton(
+              child: Text('Continue'),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => EditorPage(title: _titleController.text,cat: _selectedCategory,imageUrl: null,user: name)),);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _next() async {
-    imageUrl = await _uploadFile();
-    print("The download URL is " + imageUrl);
-    // Waits till the file is uploaded then stores the download url
-    if(imageUrl != null){
-      final snackBar =
-      SnackBar(content: Text('Image Uploaded'));
-      Scaffold.of(context).showSnackBar(snackBar);
-      Navigator.push(context, MaterialPageRoute(builder: (context) => EditorPage(title: _titleController.text,cat: _selectedCategory,imageUrl: imageUrl,user: 'admin')),);
+    if(_selectedCategory == null){
+      _showMyDialog("Category");
     }
+    if(_selectedCategory != null && _titleController.text.isEmpty )
+    {
+      _showMyDialog('Title');
+    }
+    if(_image!=null){
+      imageUrl = await _uploadFile();
+//    //print("The download URL is " + imageUrl);
+      if(imageUrl != null){
+        final snackBar =
+        SnackBar(content: Text('Image Uploaded'));
+        Scaffold.of(context).showSnackBar(snackBar);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => EditorPage(title: _titleController.text,cat: _selectedCategory,imageUrl: imageUrl,user: name)),);
+      }
+    }
+    if(_selectedCategory != null && _titleController.text.isNotEmpty && _image == null){
+      _noImageDialog();
+    }
+    // Waits till the file is uploaded then stores the download url
   }
 
   Widget _buildCategoryTF() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(height: 10.0),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              border: Border.all(color: Colors.redAccent),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(
-                  color: Colors.grey[800].withOpacity(0.5),
-                  spreadRadius: 3,
-                  blurRadius: 5,
-                  offset: Offset(1.0,0)// changes position of shadow
-              ),]
-          ),
-          height: 60.0,
-          child: Row(
-            children: <Widget>[
-              SizedBox(width: 10.0,),
-              DropdownButtonHideUnderline(child:DropdownButton<String>(
-                hint: Text("Select Your Category                           ",
+    return Padding(
+        padding: EdgeInsets.only(
+            left: 25.0, right: 25.0, top: 2.0),
+        child: new Row(
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            new Flexible(
+              child: DropdownButton(
+                hint: _selectedCategory == null
+                    ? Text('Category')
+                    : Text(
+                  _selectedCategory,
+                  style: TextStyle(color: Colors.black),
                 ),
-                dropdownColor: Colors.grey.withOpacity(0.8),
-                icon: Icon(Icons.arrow_downward),
-                iconSize: 24,
-                elevation: 16,
-                style: TextStyle(color: Colors.black),
-                value: _selectedCategory,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                },
-                items: _category.map((category) {
-                  return DropdownMenuItem(
-                    child: new Text(category),
-                    value: category,
+                isExpanded: true,
+                iconSize: 30.0,
+                style: TextStyle(color: Colors.blue),
+                items: _category.map(
+                      (val) {
+                    return DropdownMenuItem<String>(
+                      value: val,
+                      child: Text(val),
+                    );
+                  },
+                ).toList(),
+                onChanged: (val) {
+                  setState(
+                        () {
+                      _selectedCategory = val;
+                    },
                   );
-                }).toList(),
-              ),)
-            ],
-          ),
-        ),
-      ],
+                },
+              ),
+            ),
+          ],
+        )
+
     );
   }
 
-  Widget _buildTitleTF() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(height: 15.0),
-        Container(
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              border: Border.all(color: Colors.redAccent),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(
-                  color: Colors.grey[800].withOpacity(0.5),
-                  spreadRadius: 3,
-                  blurRadius: 5,
-                  offset: Offset(1.0,0)// changes position of shadow
-              ),]
-          ),
-          height: 60.0,
-          child: TextField(
-            controller: _titleController,
-            keyboardType: TextInputType.text,
-            autofocus: true,
-            style: TextStyle(
-              color: Colors.black,
-              fontFamily: 'OpenSans',
-            ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(14.0),
-              hintText: 'Title',
-
-            ),
-          ),
-        ),
-      ],
-    );
+  Widget _buildTitle() {
+    return Padding(
+        padding: EdgeInsets.only(
+            left: 25.0, right: 25.0, top: 2.0),
+        child:TextFormField(
+          controller: _titleController,
+          maxLength: 15,
+          decoration: InputDecoration(labelText: 'Title'),
+          validator: (String value) {
+            if (value.isEmpty) {
+              return 'Name is Required';
+            }
+            return null;
+          },
+        ));
   }
 
   Widget _buildNextBtn() {
@@ -153,6 +203,7 @@ class _WriteScreenState extends State<WriteScreen> {
       child: RaisedButton(
         elevation: 5.0,
         onPressed: _next,
+        color:  Color(0xff61A4F1).withOpacity(0.8),
         padding: EdgeInsets.all(15.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30.0),
@@ -160,7 +211,7 @@ class _WriteScreenState extends State<WriteScreen> {
         child: Text(
           'Next',
           style: TextStyle(
-            color: Colors.redAccent.withOpacity(0.8),
+            color: Colors.white,
             letterSpacing: 1.5,
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
@@ -197,9 +248,9 @@ class _WriteScreenState extends State<WriteScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        'Write Your Post',
+                        'ఇక్కడ వ్రాయండి',
                         style: TextStyle(
-                          color: Colors.redAccent,
+                          color: Color(0xff61A4F1),
                           fontFamily: 'OpenSans',
                           fontSize: 30.0,
                           fontWeight: FontWeight.bold,
@@ -208,20 +259,36 @@ class _WriteScreenState extends State<WriteScreen> {
                       SizedBox(height: 10.0,),
                       _buildCategoryTF(),
                       SizedBox(height: 10.0,),
-                      _buildTitleTF(),
+                      _buildTitle(),
                       SizedBox(height: 10.0,),
                       // _buildDesTF(),
                       SizedBox(height: 10.0,),
-                      _image == null ? RaisedButton(
-                        child: Text(
-                            "Image"
-                        ),
-                        textColor: Colors.redAccent,
+                      _image == null ? IconButton(
+                        icon: Icon(Icons.add_a_photo),
+                        tooltip: 'Pick Image',
                         onPressed: pickImage,
-                      ):Column(
+                        iconSize: 75.0,
+                      ):Stack(
                         children: <Widget>[
-                          Image.file(_image),
-                          RaisedButton(child: Text('Change Image'),textColor: Colors.redAccent,onPressed: pickImage,)
+                          Container(
+                            height: 300,
+                            width: 200,
+                            child: Image.file(_image,fit: BoxFit.cover,),
+                          ),
+                          Positioned(
+                            right: 0.0,
+                            top: 0.0,
+                            child: IconButton(
+                              icon: Icon(Icons.cancel),
+                              tooltip: 'Pick Image',
+                              onPressed: (){
+                                setState(() {
+                                  _image=null;
+                                });
+                              },
+                              iconSize: 15.0,
+                            ),
+                          )
                         ],
                       ),
                       _buildNextBtn(),
@@ -242,7 +309,7 @@ class EditorPage extends StatefulWidget {
   final title;
   final imageUrl;
   final user;
-  EditorPage({@required this.cat,this.title,this.imageUrl,this.user});
+  EditorPage({@required this.title,this.cat,this.imageUrl,this.user});
   @override
   EditorPageState createState() => EditorPageState();
 }
@@ -255,6 +322,8 @@ class EditorPageState extends State<EditorPage> {
   FocusNode _focusNode;
   String docUrl;
   final converter = NotusHtmlCodec();
+  File file;
+  final contents=null;
 
   @override
   void initState() {
@@ -273,17 +342,18 @@ class EditorPageState extends State<EditorPage> {
     final Widget body = (_controller == null)
         ? Center(child: CircularProgressIndicator())
         : ZefyrScaffold(
-          child: ZefyrEditor(
-            padding: EdgeInsets.all(16),
-            controller: _controller,
-            focusNode: _focusNode,
+      child: ZefyrEditor(
+        padding: EdgeInsets.all(16),
+        controller: _controller,
+        focusNode: _focusNode,
       ),
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Editor page"),
-        backgroundColor: Colors.redAccent,
+        title: Image.asset('assets/images/Logo_Bhavatarangini.png',fit: BoxFit.contain, height: 64,
+        ),
+        backgroundColor: Color(0xff61A4F1),
         actions: <Widget>[
           Builder(
             builder: (context) => IconButton(
@@ -300,14 +370,8 @@ class EditorPageState extends State<EditorPage> {
   /// Loads the document asynchronously from a file if it exists, otherwise
   /// returns default document.
   Future<NotusDocument> _loadDocument() async {
-    final file = File(Directory.systemTemp.path + "/quick_start.json");
-    if (await file.exists()) {
-      final contents = await file
-          .readAsString()
-          .then((data) => Future.delayed(Duration(seconds: 1), () => data));
-      return NotusDocument.fromJson(jsonDecode(contents));
-    }
-    final Delta delta = Delta()..insert("Zefyr Quick Start\n");
+    file = File(Directory.systemTemp.path + "/quick_start.json");
+    final Delta delta = Delta()..insert("మీ రచనను ఇక్కడ రాయండి\n");
     return NotusDocument.fromDelta(delta);
   }
 
@@ -317,7 +381,7 @@ class EditorPageState extends State<EditorPage> {
     // `jsonEncode` directly:
     final contents = jsonEncode(_controller.document);
     // For this example we save our document to a temporary file.
-    final file = File(Directory.systemTemp.path + "/quick_start.json");
+    file = File(Directory.systemTemp.path + "/quick_start.json");
     // And show a snack bar on success.
     file.writeAsString(contents).then((_) async {
       StorageUploadTask uploadTask = reference.putFile(file);
@@ -327,19 +391,24 @@ class EditorPageState extends State<EditorPage> {
   }
 
   final databaseReference = Firestore.instance;
-  void _pushToCloud(String html) {
-    print(_controller);
-    databaseReference.collection(widget.cat).add(
+  void _pushToCloud(String html) async {
+//    //print(_controller);
+    databaseReference.collection('categories').document(widget.cat).collection('books').add(
         {
           "imageUrl" :widget.imageUrl,
-          "author" : 'admin',
+          "author" : widget.user,
           "story": html,
+          "category" : widget.cat,
           "title": widget.title,
           "likes": [],
           "share": 0,
           "reads": 0,
-        }).then((value){
-      print(value.documentID);
+        }).then((value) async{
+//      //print(value.documentID);
+      docUrl=value.documentID;
+    });
+    await databaseReference.collection('categories').document(widget.cat).collection('books').document(docUrl).updateData({
+      "book_id": docUrl,
     });
     _showMyDialog();
     // if(databaseReference.collection('request').document(id).get()!=null)
@@ -355,14 +424,18 @@ class EditorPageState extends State<EditorPage> {
             child: ListBody(
               children: <Widget>[
                 Text('Your write is uploaded'),
-                Text('Would you like to approve?'),
+                Text('Confirm Submission'),
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('Approve'),
+              child: Text('Confirm'),
               onPressed: () {
+                setState(() {
+                  _controller=null;
+                  file=null;
+                });
                 Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()),);
               },
             ),
@@ -373,5 +446,6 @@ class EditorPageState extends State<EditorPage> {
   }
 
 }
+
 
 
